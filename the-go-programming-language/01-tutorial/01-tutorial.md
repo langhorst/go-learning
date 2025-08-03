@@ -29,3 +29,28 @@ Comments begin with `//` and end at the end of the line.
 The `var` declaration declares two `string` variables `s` and `sep`.
 
 `+` concatenates strings. `+=` is an assigment operator.
+
+## 1.3 Finding Duplicate Lines
+
+A *map* holds a set of key/value pairs and provides constant-time operations to store, retrieve, or test for an item in the set. The key may be of any type whose values can be compared with `==`, strings being the most common example; the value may be of any type at all.
+
+```go
+counts[input.Text()]++
+```
+
+is the equivalent of:
+
+```go
+line := input.Text()
+counts[line] = counts[line] + 1
+```
+
+You don't have to worry about the initialization of map keys. Just start using them. Also, map keys are not ordered.
+
+## 1.4 Animated GIFs
+
+A `const` declaration, like `var`, can be made at the package level or within functions.
+
+The expressions `[]color.Color{...}` and `gif.GIF{..}` are *composite literals*, a compact notation for instantiating any of Go's composite types from a sequence of element values.
+
+A *struct* type is a group of values called *fields*, often of different types, that are collected together in a single object that can be treated as a unit.

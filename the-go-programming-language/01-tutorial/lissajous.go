@@ -1,4 +1,7 @@
 // Lissajous generates GIF animations of random Lissajous figures.
+//
+// Exercise 1.5 changes the color palette to green on black.
+//
 package main
 
 import (
@@ -11,7 +14,7 @@ import (
 	"os"
 )
 
-var palette = []color.Color{color.White, color.Black}
+var palette = []color.Color{color.Black, color.RGBA{0x00, 0xFF, 0x00, 0xFF}}
 
 const (
 	whiteIndex = 0 // first color in palette
