@@ -1,7 +1,6 @@
 // Lissajous generates GIF animations of random Lissajous figures.
 //
 // Exercise 1.5 changes the color palette to green on black.
-//
 package main
 
 import (
@@ -19,6 +18,7 @@ var palette = []color.Color{color.Black, color.RGBA{0x00, 0xFF, 0x00, 0xFF}}
 const (
 	whiteIndex = 0 // first color in palette
 	blackIndex = 1 // next color in palette
+	randIndex  = 2 // random color in palette
 )
 
 func main() {
@@ -27,11 +27,11 @@ func main() {
 
 func lissajous(out io.Writer) {
 	const (
-		cycles = 5 // number of complete x oscillator revolutions
-		res = 0.001 // angular resolution
-		size = 100 // image canvas covers [-size..+size]
-		nframes = 64 // number of animation frames
-		delay = 8 // delay between frames in 10ms units
+		cycles  = 5     // number of complete x oscillator revolutions
+		res     = 0.001 // angular resolution
+		size    = 100   // image canvas covers [-size..+size]
+		nframes = 64    // number of animation frames
+		delay   = 8     // delay between frames in 10ms units
 	)
 	freq := rand.Float64() * 3.0 // relative frequency of y oscillator
 	anim := gif.GIF{LoopCount: nframes}
