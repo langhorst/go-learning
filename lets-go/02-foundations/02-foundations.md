@@ -1,6 +1,6 @@
 # 2. Foundations
 
-## Project setup and creating a module
+## 2.1. Project setup and creating a module
 
 ```bash
 go mod init snippetbox.justinlanghorst.com
@@ -12,7 +12,7 @@ go mod init snippetbox.justinlanghorst.com
   - URL: `https://github.com/foo/bar`
   - Module path: `github.com/foo/bar`
 
-## Web Application Basics
+## 2.2. Web Application Basics
 
 - Three absolute essentials:
   - Handler
@@ -37,7 +37,7 @@ $ go run main.go
 $ go run snippetbox.justinlanghorst.com
 ```
 
-## Routing Requests
+## 2.3. Routing Requests
 
 | **Route Pattern** | **Handler** | **Action** |
 | --- | --- | --- |
@@ -70,7 +70,7 @@ $ go run snippetbox.justinlanghorst.com
     - `http:.DefaultServeMux` is a global variable in the standard library, so _any_ God code in your project can access it and potentially register a route
     - Any _third-party packages that your application imports_ can register routes with `http.DefaultServeMux` too
 
-## Wildcard route patterns
+## 2.4. Wildcard route patterns
 
 - Possible to define route patterns that contain _wildcard segments_
 - Create more flexible routing rules
@@ -108,7 +108,7 @@ $ go run snippetbox.justinlanghorst.com
       - `/post/a/b`
       - `/post/a/b/c` and so on
 
-## Method-based routing
+## 2.5. Method-based routing
 
 - You can restrict routes to match specific HTTP methods
   - In fact, this SHOULD be done
@@ -130,3 +130,72 @@ $ go run snippetbox.justinlanghorst.com
 
 - The _most specific pattern wins_ rule also applies if you have route patterns that overlap because of an HTTP method
 - Route patterns that don't include a method will match incoming HTTP requests with _any method_
+
+## 2.6. Customizing responses
+
+- It's only possible to call `w.WriteHeader()` once per response, and after the status code has been written it can't be changed
+- If you don't call `w.WriteHeader()` explicitly, then the first call to `w.Write()` will automatically send a 200 status code to the user
+  - If you want to send a non-200 status code, you must call `w.WriteHeader()` _before_ any call to `w.Write()`
+- Status code constants
+  - `net/http` provides constants for HTTP status codes
+  - Good practice to prevent mistakes due to typos
+  - Helps make your code clearer and self-documenting
+- Customizing headers
+  - By changing the _response header map_
+  - You must make sure that your response header map contains all the headers you want _before_ you call `w.WriteHeader()` or `w.Write()`
+  - Any changes you make to the response header map after calling `w.WriteHeader()` or `w.Write()` will have no effect on the headers that the user receives
+- Writing response bodies
+  - Common to pass `http.ResponseWriter` value to _another function_ that writes the response for you
+  - _because the_ `http.ResponseWriter` _value in your handlers has a_ `Write()` _method, it satisfies the_ `io.Writer` _interface_
+  - This means you can use standard library functions `io.WriteString()` and the `fmt.Fprint*()` family (all of which accept an `io.Writer` parameter) to write plain- text response bodies too
+
+```go
+// Instead of this...
+w.Write([]byte("Hello world"))
+
+// You can do this...
+io.WriteString(w, "Hello world")
+fmt.Fprint(w, "Hello world")
+```
+
+- Additional information
+  - In order to automatically set the Content-Type header, Go _content sniffs_ the response body with the `http.DetectContentType()` function
+    - If this function can't guess the content type, Go will fallback to setting the header `Content-Type: application/octet-stream` instead
+  - `http.DetectContentType()` can't distinguish JSON from plain-text
+    - By default, they will be sent with a `Content-Type: text/plain; charset=utf-8` header
+    - Prevent this from happening by setting the correct header manually:
+
+```go
+w.Header().Set("Content-Type", "application/json")
+w.Write([]byte(`{"name":"Alex"}`))
+```
+
+  - Manipulating the header map
+    - `Add()`, `Set()`, `Del()`, `Get()` and `Values()`
+
+```go
+// Set a new cache-control header. If an existing "Cache-Control" header exists
+// it will be overwritten.
+w.Header().Set("Cache-Control", "public, max-age=31536000")
+
+// In contrast, the Add() method appends a new "Cache-Control" header and can
+// be called multiple times.
+w.Header().Add("Cache-Control", "public")
+w.Header().Add("Cache-Control", "max-age=31536000")
+
+// Delete all values for the "Cache-Control" header.
+w.Header().Del("Cache-Control")
+
+// Retrieve the first value for the "Cache-Control" header.
+w.Header().Get("Cache-Control")
+
+// Retrieve a slice of all values for the "Cache-Control" header.
+w.Header().Values("Cache-Control")
+```
+
+  - Header canonicalization
+    - When using these methods on the header map, the header name will always be canonicalized using the `textproto.CanonicalMIMEHeaderKey()` function
+      - Converts the first letter and any letter following a hyphen to upper case, and the rest of the letters to lowercase
+      - Header name is _case-insensitive_
+
+## 2.7. Project structure and organization
