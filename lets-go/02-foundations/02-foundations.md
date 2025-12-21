@@ -110,3 +110,23 @@ $ go run snippetbox.justinlanghorst.com
 
 ## Method-based routing
 
+- You can restrict routes to match specific HTTP methods
+  - In fact, this SHOULD be done
+  - Sets the foundation for a secure web application
+- We want to make sure we do two things:
+  - Routes which only return data, without changing anything in the application, only match requests with the HTTP method GET
+  - Routes that modify something in the application (or in other words, _change the state of the server_) only match requests with the HTTP method POST
+- The HTTP methods in route patterns are case sensitive and should always be written in uppercase, followed by at least one whitespace character (both spaces and tabs are fine)
+  - You can only include one HTTP method in each route pattern
+- GET will match both GET and HEAD requests while all other methods (POST, PUT, DELETE) require an exact match
+- Adding a POST-only route and handler
+
+| **Route pattern** | **Handler** | **Action** |
+| --- | --- | --- |
+| `GET /{$}` | `home` | Display the home page |
+| `GET /snippet/view/{id}` | `snippetView` | Display a specific snippet |
+| `/snippet/create` | `snippetCreate` | Display a form for creating a new snippet |
+| `POST /snippet/create` | `snippetCreatePost` | Save a new snippet |
+
+- The _most specific pattern wins_ rule also applies if you have route patterns that overlap because of an HTTP method
+- Route patterns that don't include a method will match incoming HTTP requests with _any method_
