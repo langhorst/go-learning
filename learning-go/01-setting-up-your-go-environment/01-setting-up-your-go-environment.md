@@ -1,6 +1,5 @@
 # Chapter 1: Setting Up Your Go Environment
 
-
 ```
 go version go1.24.2 darwin/arm64
 ```
@@ -28,4 +27,4 @@ $ go mod init hello_world
 
 ### go vet
 
-`go vet` is a command-line tool that checks Go source code for suspicious constructs, such as Printf calls whose arguments do not align with the format string. It can be used to catch potential errors and improve code quality.
+`go vet` is a command-line tool that checks Go source code for suspicious constructs, such as `Printf` calls whose arguments do not align with the format string. It can be used to catch potential errors and improve code quality.
