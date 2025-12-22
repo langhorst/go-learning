@@ -199,3 +199,23 @@ w.Header().Values("Cache-Control")
       - Header name is _case-insensitive_
 
 ## 2.7. Project structure and organization
+
+- _Don't over-complicate things_
+- Structure:
+  - `cmd`: contains _application-specific_ code for the executable applications in the project
+  - `internal`: contains the ancillary _non-application-specific_ code used in the project
+    - Potentially reusable code like validation helpers and the SQL database models for the project
+  - `ui`: contains the _user-interface assets_ used by the web application
+    - `ui/html`: contains HTML templates
+    - `ui/static`: contains static files (like CSS and images)
+- Why?
+  - Clean separation between Go and non-Go assets_
+  - Scales nicely if you want to add another executable application to your project
+    - Like a future CLI to automate some administrative tasks in the future
+      - `cmd/cli` for example
+- Additional information
+  - The internal directory
+    - `internal` carries a special meaning and behavior in Go: any packages which live under this directory can only be imported by code _within the parent directory of_ `internal`
+      - Or in other words, packages under `internal` _cannot be imported by code outside of our project_
+
+## 2.8. HTML templating and inheritance
