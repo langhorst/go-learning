@@ -76,6 +76,27 @@ go get github.com/go-sql-driver/mysql@v1
 
 ## 4.3. Modules and reproducible builds
 
+- `go.mod` require lines tell the Go command exactly which version of a package should be used when you run a command like `go run`, `go test` or `go build`
+- `// indirect` annotation indicates that a package doesn't directly appear in any `import` statement in your codebase (allows it to stay without causing an error, or a tool automatically removing the line)
+- `go.sum` contains the cryptographic checksums representing the content of the required packages
+- `go mod verify` verifies the checksums of the downloaded package on your machine, matching the entries in `go.sum`
+- Upgrading packages
+  - To upgrade to latest available _minor or patch release_ of a package, you can simply run `go get` like so:
+    - `$ go get github.com/foo/bar`
+  - Alternatively, upgrade to a specific version, use the `@version` suffix:
+    - `$ go get github.com/foo/bar/@v1.2.3`
+  - The `-u` flag of `go get` will upgrade the package _and all its dependencies to their latest versions_
+    - `$ go get -u github.com/foo/bar`
+  - Listing upgradable packages:
+    - `$ go list -u -f '{{if (and (not (or .Main .Indirect)) .Update)}}{{.Path}}: {{.Version}} -> {{.Update.Version}}{{end}}' -m all`
+  - Removing unused packages:
+    - There are two methods here
+    - Run `go get` and postfix the package path with `@none`:
+      - `$ go get github.com/foo/bar@none`
+    - Or use `go mod tidy`:
+      - `$ go mod tidy`
+
+
 ## 4.4. Creating a database connection pool
 
 ## 4.5. Designing a database model
