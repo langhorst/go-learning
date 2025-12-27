@@ -130,3 +130,5 @@ func main() {
   - `debug.Stack()` returns a _stack trace_ outlining the execution path through the application for the _current goroutine_
 
 ## 3.5. Isolating the application routes
+
+- Move the route declarations for the application into a standalone `routes.go` file
