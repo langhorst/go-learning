@@ -69,6 +69,11 @@ SELECT id, title, expires FROM snippets;
 
 ## 4.2. Installing a database driver
 
+```bash
+go get github.com/go-sql-driver/mysql@v1
+```
+
+
 ## 4.3. Modules and reproducible builds
 
 ## 4.4. Creating a database connection pool
