@@ -40,6 +40,7 @@ $ go run ./cmd/web -addr=$SNIPPETBOX_ADDR
   - `flag.StringVar(&cfg.addr, "addr", ":4000", "HTTP network address")`
   - ... and so forth
 
+
 ## 3.2. Structured logging
 
 - The `log` package is good enough for simple logging
@@ -75,6 +76,52 @@ logger := slog.New(loggerHandler)
 
 
 ## 3.3. Dependency injection
+
+- _How can we make any dependency available to our handlers?_
+  - Simple (but bad practice): put the dependencies in global variables
+  - Good practice: _inject dependencies_ into your handlers
+    - Code is more explicit,
+    - Less error-prone
+    - Easier to unit test
+  - For applications where all your handlers are in the same package
+    - Put dependencies into a custom `application` struct
+    - Define your handler functions as methods against `application`
+- Closures for dependency injection
+  - The method we've used thus far won't work if handlers are spread across multiple packages
+  - An alternative approach is to create a standalone `config` package which exports an `Application` struct and have your handler functions close over this to form a _closure_:
+
+```go
+// package config
+
+type Application struct {
+  Logger *slog.Logger
+}
+
+// package foo
+func ExampleHandler(app *config.Application) http.HandlerFunc {
+  return func(w http.ResponseWriter, r *http.Request) {
+    ...
+    ts, err := template.ParseFiles(files...)
+    if err != nil {
+      app.Logger.Error(err.Error(), "method", r.Method, "uri", r.URL.RequestURI()) 
+      http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+      return
+    }
+    ...
+  }
+}
+
+// package main
+func main() {
+  app := &config.Application{
+    Logger: slog.New(slog.NewTextHandler(os.Stdout, nil)), 
+  }
+  ...
+  mux.Handle("/", foo.ExampleHandler(app))
+  ...
+}
+
+```
 
 ## 3.4. Centralized error handling
 
