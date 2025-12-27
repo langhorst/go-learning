@@ -242,3 +242,51 @@ w.Header().Values("Cache-Control")
   - And you don't _need_ to include any default content between the `{{block}}` and `{{end}}` actions
 
 ## 2.9. Serving static files
+
+- The `http.FileServer` handler
+  - You can use this to serve files over HTTP from a specific directory
+
+| **Route pattern** | **Handler** | **Action** |
+| --- | --- | --- |
+| `GET /{$}` | `home` | Display the home page |
+| `GET /snippet/view/{id}` | `snippetView` | Display a specific snippet |
+| `GET /snippet/create` | `snippetCreate` | Display a form for creating a new snippet |
+| `POST /snippet/create` | `snippetCreatePost` | Save a new snippet |
+| `GET /static/` | `http.FileServer` | Serve a specific static file |
+
+  - Remember the pattern `GET /static/` is a subtree path pattern, so it acts a bit like there is a wildcard at the end
+  - `fileServer := http.FileServer(http.Dir("./ui/static/"))` to create the FileServer
+  - When this handler receives a request for a file, it will remove the leading slash from the request URL path and then search the `./ui/static` directory for the corresponding file to send to the user
+    - We must strip the leading `/static` from the URL path _before_ passing it to `http.FileServer`
+- File server features and functions (`http.FileServer`):
+  - Sanitizes all request paths by running them through the `path.Clean()` function before searching for a file
+    - This removes any `.` and `..` elements from the URL path which helps directory traversal attacks
+    - Particularly useful if you're using the fileserver in conjunction with a router that doesn't automatically sanitize URL paths
+  - **Range requests** are fully supported
+    - Great for serving large files and you want to support resumable downloads
+  - The `Last-Modified` and `If-Modified-Since` headers are transparently supported
+    - If the file hasn't changed since the client's last request, then `http.FileServer` will send a `304 Not Modified` status code instead of the file itself
+    - Helps reduce latency and processing overhead for both the client and server
+  - The `Content-Type` is automatically set from the file extension using the `mime.TypeByExtension()` function
+    - Add your own custom extensions and content types using the `mime.AddExtensionType()` function if necessary
+- Performance
+  - Both Windows and Unix-based operating systems cache recently-used files in RAM, so it's likely that `http.FileServer` will be serving them from RAM rather than making the relatively slow round-trip to your hard disk
+- Serving single files
+  - Use the `http.ServeFile()` function
+
+```go
+func downloadHandler(w http.ResponseWriter, r *http.Request) {
+  http.ServeFile(w, r, "./ui/static/file.zip")
+}
+```
+
+  - **Warning**: `http.ServeFile()` does not automatically sanitize the file path!
+    - You _must_ sanitize any user input with `filepath.Clean()` before using it
+- Disabling directory listings
+  - The simplest way is to add a blank `index.html` file to the specific directory that you want to disable listings for
+    - `$ find ./ui/static -type d -exec touch {}/ index.html \;`
+  - The more complicated (but arguably better) solution is to create a custom implementation of `http.FileSystem` and have it return an `os.ErrNotExist` error for any directories
+
+## 2.10. The http.Handler interface
+
+
