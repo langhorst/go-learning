@@ -125,5 +125,8 @@ func main() {
 
 ## 3.4. Centralized error handling
 
-## 3.5. Isolating the application routes
+- `http.StatusText()` returns a human-friendly text representation of a given HTTP status code
+- Stack traces
+  - `debug.Stack()` returns a _stack trace_ outlining the execution path through the application for the _current goroutine_
 
+## 3.5. Isolating the application routes
