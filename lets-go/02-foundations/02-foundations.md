@@ -219,3 +219,9 @@ w.Header().Values("Cache-Control")
       - Or in other words, packages under `internal` _cannot be imported by code outside of our project_
 
 ## 2.8. HTML templating and inheritance
+
+- The file path passed to `template.ParseFiles()` must either be relative to your current working directory, or an absolute path
+- If either `template.ParseFiles()` or `ts.Execute()` returns an error, we log the detailed error message and then use the `http.Error()` function to send a response to the user
+  - `http.Error()` is a lightweight helper function which sends a plain-text error message and a specific HTTP status code to the user
+- Template composition
+  - Prevent duplication
