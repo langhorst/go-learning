@@ -225,3 +225,20 @@ w.Header().Values("Cache-Control")
   - `http.Error()` is a lightweight helper function which sends a plain-text error message and a specific HTTP status code to the user
 - Template composition
   - Prevent duplication
+- Embedding partials
+  - Break out certain bits of HTML into partials that can be re-used in different pages or layout
+- The block action
+  - Go provides a `{{block}}...{{end}}` action to invoke one template from another while allowing specification of default content if the template being invoked _doesn't exist in the current template set_
+
+```html
+{{define "base"}}
+  <h1>An example template</h1>
+  {{block "sidebar" .}}
+    <p>My default sidebar content</p>
+  {{end}}
+{{end}}
+```
+
+  - And you don't _need_ to include any default content between the `{{block}}` and `{{end}}` actions
+
+## 2.9. Serving static files

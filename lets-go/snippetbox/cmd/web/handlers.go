@@ -16,6 +16,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 	// file in the slice.
 	files := []string{
 		"./ui/html/base.html",
+		"./ui/html/partials/nav.html",
 		"./ui/html/pages/home.html",
 	}
 
@@ -29,11 +30,9 @@ func home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Then we use the Execute() method on the template set to write the
-	// template content as the response body. The last parameter to Execute()
-	// represents any dynamic data that we want to pass in, which for now we'll
-	// leave as nil.
-	err = ts.Execute(w, "base")
+	// Use the ExecuteTemplate() method to write the content of the "base"
+	// template as the response body.
+	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
 		log.Print(err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
