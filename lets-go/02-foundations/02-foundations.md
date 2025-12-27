@@ -289,4 +289,29 @@ func downloadHandler(w http.ResponseWriter, r *http.Request) {
 
 ## 2.10. The http.Handler interface
 
+- What we mean by the term _handler_ is _a type which satisfies the `http.Handler` interface_:
+
+```go
+type Handler interface {
+  ServeHTTP(ResponseWriter, *Request)
+}
+```
+
+- This basically means that to be a handler a type _must_ have a `ServeHTTP()` method with the exact signature: `ServeHTTP(http.ResponseWriter, *http.Request)`
+- Handler functions
+  - Transform a normal function into a handler function using the `http.HandlerFunc()` adapter:
+
+```go
+mux := http.NewServeMux()
+mux.Handle("/", http.HandlerFunc(home))
+```
+
+  - This adapter works by automatically adding a `ServeHTTP()` method to the home function
+  When executed, this `ServeHTTP()` method then simply _calls the code inside of the original `home` function_
+
+- Chaining handlers
+  - You can think of a Go web application as a _chain of `ServeHTTP()` methods being called one after another_
+- Requests are handled concurrently
+  - _All incoming HTTP requests are served in their own goroutine_
+  - You need to be aware of (and protect against) **race conditions** when accessing shared resources from your handlers
 
