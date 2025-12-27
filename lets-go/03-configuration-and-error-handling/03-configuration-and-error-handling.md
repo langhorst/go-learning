@@ -42,6 +42,36 @@ $ go run ./cmd/web -addr=$SNIPPETBOX_ADDR
 
 ## 3.2. Structured logging
 
+- The `log` package is good enough for simple logging
+- But for applications that do a lot of logging, you might want more features: `log/slog` package provides this
+  - Timestamp with millisecond precision
+  - Severity levels
+  - Log message
+  - Any number of key-value pairs containing additional information
+- Creating a structured logger
+  - All structured loggers have a _structured logging handler_ associated with them
+  - Code for creating a logger:
+
+```go
+loggerHandler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{...})
+logger := slog.New(loggerHandler)
+```
+
+  - More common to use a single line of code: `logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{...}))`
+- Using a structured logger
+  - `Debug()`, `Info()`, `Warn()` and `Error()` are all _variadic methods_ which accept an arbitrary number of additional attributes (key-value pairs)
+- Safer attributes
+  - Use `slog.Any()` or go even further for additional type safety by using the `slog.String()`, `slog.Int()`, `slog.Bool()`, `slog.Time()` and `slog.Duration()` functions to create attributes with a specific type of value
+- JSON formatted logs
+  - Instead of the plain-text handler, `slog.NewJSONHandler()` provides a JSON handler
+  - `logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))`
+- Minimum log level
+  - `log/slog` provides severity level ordering: Debug, Info, Warn, Error
+  - `logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))`
+- Decoupled logging by using `os.Stdout` and dealing with log capture with some other process
+- Concurrent logging
+  - Custom loggers created by `slog.New()` are concurrency-safe
+  - If you have _multiple_ structured loggers writing to the same destination then you need to be careful and ensure that the destination's underlying `Write()` method is also safe for concurrent use
 
 
 ## 3.3. Dependency injection
