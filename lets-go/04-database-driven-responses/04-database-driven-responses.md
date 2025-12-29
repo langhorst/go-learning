@@ -99,6 +99,31 @@ go get github.com/go-sql-driver/mysql@v1
 
 ## 4.4. Creating a database connection pool
 
+```go
+// The sql.Open() function initializes a new sql.DB value, which is essentially
+// a pool of database connections.
+db, err := sql.Open("mysql", "web:pass@/snippetbox?parseTime=true")
+if err != nil {
+	...
+}
+````
+
+- `sql.Open()`
+  - first parameter: _driver name_
+  - second parameter is the _data source name_ (DSN) which describes how to connect to your database
+  - `parseTime=true` is a _driver-specific_ parameter which converts SQL `TIME` and `DATE` fields to Go `time.Time` values
+  - returns a `sql.DB` value
+    - a _pool of many connections_
+    - Go manages the connections in this pool as needed, automatically opening and closing connections to the databnase via the driver
+    - connection pool is safe for concurrent access
+    - intended to be long-lived
+    - actual connections to the database are established lazily, as and when needed for the first time
+    - `db.Ping()` is used to create a connection and check that it's working
+- import `_ "github.com/go-sql-driver/mysql"`
+  - The underscore (`_`) is used when the code doesn't actually use anything in the package
+  - The reason for importing is so that the `init()` function runs
+  - Standard practice for most of Go's SQL drivers
+
 ## 4.5. Designing a database model
 
 ## 4.6. Executing SQL statements
