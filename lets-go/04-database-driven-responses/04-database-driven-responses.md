@@ -124,7 +124,22 @@ if err != nil {
   - The reason for importing is so that the `init()` function runs
   - Standard practice for most of Go's SQL drivers
 
+
 ## 4.5. Designing a database model
+
+- The `internal` directory is being used to hold ancillary non-application-specific code which could potentially be re-used
+- Benefits of this structure
+  - Clean separation of concerns
+    - Database logic not tied to handlers
+    - Easier to write tight, focused, unit tests in the future
+  - A custom `SnippetModel` allows us to
+    - Make our model a single, neatly-encapsulated component
+    - Can easily be initialized and passed to our handlers as a dependency
+    - Allows for more maintable, testable code
+  - Because model actions are defined as methods on the `SnippetModel` type
+    - Opportunity to create an _interface_ and mock it for unit testing purposes
+  - Total control over which database is used at runtime
+
 
 ## 4.6. Executing SQL statements
 
