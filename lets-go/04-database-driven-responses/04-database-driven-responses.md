@@ -207,3 +207,125 @@ func (m *SnippetModel) Get(id int) (Snippet, error) {
 
 
 ## 4.9. Transactions and other details
+
+- The database/sql package
+  - Provides a standard interface between your Go application and the world of SQL databases
+  - There _are_ some idiosyncrasies in the way that different drivers and databases operate
+- Verbosity
+  - Verbose, but non-magical
+  - Can understand and control exactly what's going on
+  - Consider `jmoiron/sqlx` package if verbosity really starts annoying you
+- Managing null values
+  - Go doesn't manage `NULL` values well
+  - Set `NOT NULL` constraints on your database columns ... avoid `NULL` altogether
+- Working with transactions
+  - Guarantee the same connection is used by wrapping multiple statements in a transaction:
+  
+```go
+type ExampleModel struct {
+  DB *sql.DB
+}
+
+func (m *ExampleModel) ExampleTransaction() error {
+	// Calling the Begin() method on the connection pool creates a new sql.Tx
+	// value, which represents the in-progress database transaction.
+	tx, err := m.DB.Begin()
+	if err != nil {
+		return err
+	}
+	
+	// Defer a call to tx.Rollback() to ensure it is always called before the
+	// function returns. If the transaction succeeds it will already be
+	// committed by the time tx.Rollback() is called, making tx.Rollback() a
+	// no-op. Otherwise, in the event of an error, tx.Rollback() will roll back
+	// the changes before the function returns.
+	defer tx.Rollback()
+	
+	// Call Exec() on the transaction, passing in your statement and any
+	// parameters. It's important to notice that tx.Exec() is called on the
+	// transaction value just created. NOT the connection pool. Although we're
+	// using tx.Exec() here you can also use tx.Query() and tx.QueryRow() in
+	// exactly the same way.
+}
+```
+
+  - You must _always_ call either `Rollback()` or `Commit()` before your function returns
+    - Otherwise connection will stay open and not be returned by the connection pool
+    - This can lead to hitting your maximum connection limit/running out of resources
+    - Simplest way is to use `defer tx.Rollback()`
+  - Transactions are useful for executing multiple SQL statements as a _single atomic action_
+    - Use `tx.Rollback()` and the transaction ensures:
+      - _All_ statements are executed successfully; or
+      - _No_ statements are eecuted and the database remains unchanged
+- Prepared statements
+  - `Exec()`, `Query()`, and `QueryRow()` automatically create prepared statements
+  - May be inefficient ... better approach is to use `DB.Prepare()` to create a prepared statement once, and reuse that instead
+    - Particularly true for complex SQL statements with multiple `JOINS`
+  - Basic pattern:
+  
+```go
+// We need somewhere to store the prepared statement for the lifetime of our
+// web application. A neat way is to embed it in the model alongside the
+// connection pool.
+type ExampleModel struct {
+	DB *sql.DB
+	InsertStmt *sql.Stmt
+}
+
+// Create a constructor for the model, in which we set up the prepared
+// statement.
+func NewExampleModel(db *sql.DB) (*ExampleModel, error) {
+	// Use the Prepare method to create a new prepared statement for the
+	// current connection pool. This returns a sql.Stmt value which represents
+	// the prepared statement.
+	insertStmt, err := db.Prepare("INSERT INTO ...")
+	if err != nil {
+		return nil, err
+	}
+	
+	// Store it in our ExampleModel struct, alongside the connection pool.
+	return &ExampleModel{DB: db, InsertStmt: insertStmt}, nil
+}
+
+// Any methods implemented against the ExampleModel struct will have access to
+// the prepared statement.
+func (m *ExampleModel) Insert(args...) error {
+	// We then need to call Exec directly against the prepared statement, rather
+	// than against the connection pool. Prepared statement also support the
+	// Query and QueryRow methods.
+	_, err := m.InsertStmt.Exec(args...)
+	
+	return err
+}
+
+// In the web application's main function we will need to initialize a new
+// ExampleModel struct using the constructor function.
+func main() {
+	db, err := sql.Open(...)
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+	defer db.Close()
+
+	// Use the constructor function to create a new ExampleModel struct.
+	exampleModel, err := NewExampleModel(db)
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+	
+	// Defer a call to Close() on the prepared statement to ensure that it is
+	// properly closed before our main function terminates.
+	defer exampleModel.InsertStmt.Close()
+}
+```
+
+  - Prepared statements exist on _database connections_
+    - Because Go uses a pool of _many database connections_, when you first use a prepared statement it will remember which connection in the pool was used
+    - Next time prepared statement will attempt to use that same database connection
+    - Heavier load, possibly that a large number of prepared statements will be created on multiple connections
+      - Can lead to statements being prepared and re-prepared more often than you'd expect
+      - Or even hitting server-side limits (MySQL: 16,382 prepared statements)
+    - This code is more complicated than not using prepared statements
+      - Measure accordingly
