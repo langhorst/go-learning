@@ -200,4 +200,10 @@ func (m *SnippetModel) Get(id int) (Snippet, error) {
 
 ## 4.8. Multiple-record SQL queries
 
+- Closing a resultset with `defer rows.Close()` is critical
+  - As long as resultset is open it will keep the underlying database connection open
+  - If something goes wrong in the method where rows were returned, it can rapidly lead to all the connections in your pool being used up
+
+
+
 ## 4.9. Transactions and other details
