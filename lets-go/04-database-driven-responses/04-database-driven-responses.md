@@ -167,6 +167,37 @@ if err != nil {
 
 ## 4.7. Single-record SQL queries
 
+- `row.Scan()` will automatically convert the raw output from the SQL database to the required native Go types:
+  - `CHAR`, `VARCHAR`, and `TEXT` map to `string`
+  - `BOOLEAN` maps to `bool`
+  - `INT` maps to `int`; `BIGINT` maps to `int64`
+  - `DECIMAL` and `NUMERIC` map to `float`
+  - `TIME`, `DATE`, and `TIMESTAMP` map to `time.Time`
+  - MySQL driver quirk: need to use `parseTime=true` parameter in our DSN to force it to convert `TIME` and `DATE` fields to `time.Time`, otherwise they come over as `[]byte` slices
+- Checking for specific errors:
+  - `errors.Is()` checks whether an error matches a specific value
+    - Works by _unwrapping_ errors as necessary before checking for a match
+    - `errors.As()` checks for a specific type
+- Shorthand single-record queries
+
+```go
+func (m *SnippetModel) Get(id int) (Snippet, error) {
+	var s Snippet
+
+	err := m.DB.QueryRow("SELECT ...", id).Scan(&s.ID, &s.Title, &s.Content, &s.Created, &s.Expires)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return Snippet{}, ErrNoRecord
+		} else {
+			return Snippet{}, err
+		}
+	}
+	
+	return s, nil
+}
+```
+
+
 ## 4.8. Multiple-record SQL queries
 
 ## 4.9. Transactions and other details
