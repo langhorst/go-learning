@@ -22,6 +22,38 @@
 
 ## 5.2. Template actions and functions
 
+| **Action** | **Description**|
+| --- | --- |
+| `{{if .Foo}} C1 {{else}} C2 {{end}}` | If `.Foo` is not empty then render the content C1, otherwise render the content C2. |
+| `{{with .Foo}} C1 {{ else }} C2 {{end}} | If `.Foo` is not empty, then set dot to the value of `.Foo` and render the content C1, otherwise render the content C2. |
+| `{{range .Foo}} C1 {{else}} C2 {{end}}` | If the length of `.Foo` is greater than zero then loop over each element, setting dot to the value of each element and rendering the content C1. If the length of `.Foo` is zero then render the content C2. The underlying type of `.Foo` must be an array, slice, map, or channel. |
+
+- `{{else}}` is optional
+- The _empty_ values are `false`, `0`, any nil pointer or interface value, and any array, slice, map, or string of length zero
+- It's important to grasp that the `with` and `range` actions change the value of dot
+
+- `html/template`:
+
+| **Action** | **Description**|
+| --- | --- |
+| `{{eq .Foo .Bar}}` | Yields true if `.Foo` is equal to `.Bar` |
+| `{{ne .Foo .Bar}}` | Yields true if `.Foo`. is not equal to `.Bar` |
+| `{{not .Foo}}` | Yields the boolean negation of `.Foo` |
+| `{{or .Foo .Bar}}` | Yields `.Foo`. if `.Foo` is not empty; otherwise yields `.Bar` |
+| `{{index .Foo i}}` | Yields the value of `.Foo` at index `i`. The underlying type of `.Foo` must be a map, slice or array, and `i` must be an integer value. |
+| `{{printf "%s-%s" .Foo .Bar}} | Yields a formatted string containing the `.Foo`. and `.Bar` values. Works in the same way as fmt.Sprintf() |
+| `{{len .Foo}}` | Yields the length of `.Foo` as an integer. |
+| `{{$bar := len .Foo}}` | Yields the length of `.Foo` as an integer. |
+| `{{$bar := len .Foo}}` | Declare and assign the length of `.Foo` to the template variable `$bar` |
+
+- Combining functions
+  - Use parentheses `()` to surround the functions and their arguments as necessary
+  - Ex: `{{if (and (eq .Foo 1) (le .Bar 20))}} C1 {{end}}`
+- Controlling loop behavior
+  - Within a `{{range}}` you can use `{{break}}` to end the loop early
+  - `{{continue}}` to immediately start the next loop iteration
+
+
 ## 5.3. Caching templates
 
 ## 5.4. Catching runtime errors
