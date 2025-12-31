@@ -56,6 +56,11 @@
 
 ## 5.3. Caching templates
 
+- Refactoring a few things in the code, things to fix:
+  1. `template.ParseFiles()` is called for each render -- avoid this by parsing the files once, and storing templates in an in-memory cache
+  2. Reduce code duplication in `home` and `snippetView`
+  
+
 ## 5.4. Catching runtime errors
 
 ## 5.5. Common dynamic data
