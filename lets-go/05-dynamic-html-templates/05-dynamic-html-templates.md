@@ -74,3 +74,12 @@
 
 
 ## 5.6. Custom template functions
+
+- Two main steps:
+  1. Create a `template.FuncMap` map containing the custom functions
+  2. Use `template.Funcs()` method to register before the templates are parsed
+- Custom template functions can accept as many parameters as they need to, but they _must_ return one value only
+- Pipelining
+  - Instead of: `{{humanDate .Created}}`
+  - _Pipeline_ the values with `|`: `{{.Created | humanDate}}`
+  - Ex: `{{.Created | humanDate | printf "Created: %s"}}`
