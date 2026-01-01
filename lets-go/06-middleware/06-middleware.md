@@ -46,6 +46,57 @@ func myMiddleware(next http.Handler) http.Handler {
   
 
 ## 6.2. Setting common headers
+
+- Headers:
+  - `Content-Security-Policy` (CSP) headers are used to restrict where the resources for your web page (e.g. JavaScript, images, fonts, etc) can be loaded from
+    - Setting a strict CSP policy helps prevent a variety of cross-site scripting, clickjacking, and other code-injection attacks
+    - Primer: https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
+  - `Referrer-Policy` is used to control what information is included in a `Referer` header when a user navigates away from your web page
+    - `origin-when-cross-origin` means that the full URL will be included for [same-origin requests](https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy), but for all other requests information like the URL path and any query string values will be stripped out
+  - `X-Content-Type-Options: nosniff` instructs browsers to _not_ MIME-type sniff the content-type of the response, which in turn helps to prevent [content-sniffing attacks](https://security.stackexchange.com/questions/7506/using-file-extension-and-mime-type-as-output-by-file-i-b-combination-to-dete/7531#7531)
+  - `X-Frame-Options: deny` is used to help prevent [clickjacking](https://developer.mozilla.org/en-US/docs/Web/Security/Types_of_attacks#click-jacking) attacks in older browsers that don't support CSP headers
+  - `X-XSS-Protection: 0` _disables_ the browser's built-in XSS (cross-site-scripting) filtering
+    - Previously it was good practice to set this header to `X-XSS-Protection: 1; mode=block` but when you're using CSP headers like we are the recommendation is to disable this
+- Flow of control
+  - When the last handler in the chain returns, control is passed back up the chain in the reverse direction
+  - In any middleware handler
+    - Code which comes before `next.ServeHTTP()` will be executed on the way down the chain
+    - Code after `next.ServeHTTP()` -- or in a deferred function -- will be executed on the way back up
+
+```go  
+func myMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Any code here will execute on the way down the chain.
+		next.ServeHTTP(w, r)
+		// Any code here will execute on the way back up the chain.
+	})
+}
+```
+
+- Early returns
+  - If you call `return` in your middleware function _before_ you call `next.ServeHTTP()`, then the chain will stop being executed and control will flow back upstream
+  - Authentication middleware is a good use case:
+  
+```go
+func myMiddleware(next http.Handler) http.Handler {
+	return http.HandleFunc(func(w http.ResponseWriter, r *http.Request) {
+		// If the user isn't authorized, send a 403 Forbidden status and
+		// return to stop executing the chain
+		if !isAuthorized(r) {
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+		
+		// Otherwise, call the next handler in the chain.
+		next.ServeHTTP(w, r)
+	})
+}
+```
+
+- Debugging CSP issues
+  - Watch your browser logs and get in the habit of checking logs early
+
+
 ## 6.3. Request logging
 ## 6.4. Panic recovery
 ## 6.5. Cmoposable middleware chains
