@@ -70,4 +70,7 @@
 
 ## 5.5. Common dynamic data
 
+- Add year to footer in SnippetBox app
+
+
 ## 5.6. Custom template functions
