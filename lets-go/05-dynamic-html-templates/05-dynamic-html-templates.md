@@ -63,6 +63,11 @@
 
 ## 5.4. Catching runtime errors
 
+- Make template rendering a two-stage process:
+  1. Make a _trial_ render by writing the template into a buffer
+  2. If this fails, respond to the user with an error message, otherwise, write the contents of the buffer to the `http.ResponseWriter`
+
+
 ## 5.5. Common dynamic data
 
 ## 5.6. Custom template functions
