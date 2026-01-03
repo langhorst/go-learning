@@ -66,4 +66,63 @@ if err != nil {
   
 
 ## 7.5. Creating validation helpers
+
+- Generics
+  - _parametric polymorphism_
+  - Allow you to write code that works with _different concrete types_
+  - From this `[]string` slice and `[]int` slice handling:
+  
+```go
+// Count how many times the value v appears in the slice s.
+func countString(v string, s []string) int {
+	count := 0
+	for _, vs := range s {
+		if v == vs {
+			count++
+		}
+	}
+	return count
+}
+
+func countInt(v int, s []int) int {
+	count := 0
+	for _, vs := range s {
+		if v == vs {
+			count++
+		}
+	}
+	return count
+}
+```
+
+  - And with generics:
+  
+```go
+func count[T comparable](v T, s []T) int {
+	count := 0
+	for _, vs := range s {
+		if v == vs {
+			count++
+		}
+	}
+	return count
+}
+```
+
+  - Check out the [official Go generics tutorial](https://go.dev/doc/tutorial/generics) and then watch the first 15 minutes of [this video](https://www.youtube.com/watch?v=Pa_e9EeCdy8)
+  - Use judiciously, you don't _need_ generics, but consider using when:
+    - You find yourself writing repeated boilerplate code for different data types
+      - Examples:
+        - common operations on slices, maps or channels
+        - helpers for carrying out validation checks
+        - test assertions on different data types
+    - You find yourself reaching for the `any` (empty `interface{}`) type
+      - Examples:
+        - creating a data structure (like a queue, cache or linked list) which needs to operate on different types
+  - You probably don't want to use generics:
+    - If it makes your code harder to understand, or less clear
+    - If all the types that you need to work with have a common set of methods -- in which case it's better to define and use a normal `interface` type instead
+    - Just _because you can_ -- prefer non-generic code by default, and switch to a generic version later _only if it is actually needed_
+
+
 ## 7.6. Automatic form parsing
