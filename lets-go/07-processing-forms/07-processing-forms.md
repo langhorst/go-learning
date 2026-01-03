@@ -60,5 +60,10 @@ if err != nil {
 
 
 ## 7.4. Displaying errors and repopulating fields
+
+- Restful routing
+  - We are not matching Ruby on Rails or Laravel here so that things are not clunky and confusing
+  
+
 ## 7.5. Creating validation helpers
 ## 7.6. Automatic form parsing
