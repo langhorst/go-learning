@@ -145,3 +145,13 @@ func (app *application) myHandler(w http.ResponseWriter, r *http.Request) {
 
 
 ## 6.5. Cmoposable middleware chains
+
+- `justinas/alice` package helps us manage our middleware/handler chains
+  - Package is small and lightweight, and code is clear and well written
+  - Can use it to create middleware chains t hat can be assigned to variables, appended to, and reused:
+  
+```go
+myChain := alice.New(myMiddlewareOne, myMiddlewareTwo)
+myOtherChain := myChain.Append(myMiddleware3)
+return myOtherChain.Then(myHandler)
+```
