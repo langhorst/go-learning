@@ -103,4 +103,45 @@ func myMiddleware(next http.Handler) http.Handler {
 
 
 ## 6.4. Panic recovery
+
+- Normally a runtime panic will result in the application being terminated
+- Go's HTTP server automatically _recovers_ any panics in the goroutines it creates
+  - Assumes effect of any panic is isolated to the goroutine serving the active HTTP request
+  - Recovers it so that the panic _will not_ terminate your web application
+- If there is a panic in middleware or handler code, the following things will happen:
+  1. Normal execution of the code in your middleware or handlers will immediately stop
+  2. Any deferred functions for the current goroutine will be run in reverse (last-in, first-out) order
+  3. The panic will then be recovered by Go's HTTP server, which will close the underlying HTTP connection
+  4. An error message and stack trace will be output to the server error log
+  5. No other HTTP requests will be affected by the panic
+- To better inform the user of a panic, we can create some additional middleware that recovers the panic _ourselves_ and calls our `app.serverError()` helper method by leveraging the fact that deferred functions in the current goroutine are always called following a panic
+- Setting the `Connection: Close` header acts as a trigger to make Go's HTTP server automatically close the current connection after a response is sent
+  - Also informs ujser that the connection _will be closed_.
+  - If protocol is HTTP/2, Go will automatically strip the `Connection: Close` header from the response and send a `GOAWAY` frame
+- The value `pv` returned by `recover()` function has the type `any` and we normalize this into an `error` by using `fmt.Errorf()` and the `%v` verb to create a new `error` value, containing the default text representation of `pv`
+- Panic recovery in background goroutines
+  - Our middleware will only recover panics that happen in the _same goroutine that executed the `recoverPanic()` middleware_
+  - If you are spinning up additional goroutines from within your web application and there is any chance of a panic, you must make sure that you recover any panics from within those too:
+  
+```go
+func (app *application) myHandler(w http.ResponseWriter, r *http.Request) {
+ 	// ...
+  
+  // Spin up a new goroutine to do some background processing.
+  go func() {
+  	defer func() {
+   		pv := recover()
+      if pv != nil {
+        app.logger.Error(fmt.Errorf("%v", pv))
+      }
+	  }()
+   
+    doSomeBackgroundProcessing()
+  }
+
+	w.Write([]byte("OK"))
+}
+```
+
+
 ## 6.5. Cmoposable middleware chains
