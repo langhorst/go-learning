@@ -99,6 +99,8 @@ func myMiddleware(next http.Handler) http.Handler {
 
 ## 6.3. Request logging
 
+- Middleware method based on `application` _also_ has access to the handler dependencies including the structured logger
+
 
 ## 6.4. Panic recovery
 ## 6.5. Cmoposable middleware chains

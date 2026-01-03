@@ -44,7 +44,7 @@ func (app *application) render(w http.ResponseWriter, r *http.Request, status in
 		app.serverError(w, r, err)
 	}
 
-	w.WriteHeader(status)
+	//w.WriteHeader(status) // TODO: is this needed? (http: superfluous response.WriteHeader call from main.(*application).render (helpers.go:47))
 	buf.WriteTo(w)
 }
 
