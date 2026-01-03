@@ -55,6 +55,10 @@ if err != nil {
  
   
 ## 7.3. Validating form data
+
+- `utf8.RuneCountInString()` counts the number of _Unicode code points_ rather than the number of bytes
+
+
 ## 7.4. Displaying errors and repopulating fields
 ## 7.5. Creating validation helpers
 ## 7.6. Automatic form parsing
