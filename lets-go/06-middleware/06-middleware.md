@@ -98,5 +98,7 @@ func myMiddleware(next http.Handler) http.Handler {
 
 
 ## 6.3. Request logging
+
+
 ## 6.4. Panic recovery
 ## 6.5. Cmoposable middleware chains
