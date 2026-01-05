@@ -126,3 +126,30 @@ func count[T comparable](v T, s []T) int {
 
 
 ## 7.6. Automatic form parsing
+
+- Panicking vs returning errors
+  - The decision to panic within `decodePostForm()` if we get a `form.InvalidDecoderError` error is not taken lightly
+  - It's generally considered best practice in Go to return your errors and handle them gracefully
+  - In _some special circumstances_ it can be OK to panic -- no need to be dogmatic about _not panicking_ when it makes sense to
+  - Two classes of errors:
+    - _operational errors_ that may occur during normal operation
+      - Examples:
+        - caused by a database query timeout
+        - a network resource being unavailable
+        - bad user input
+      - These errors don't necessarily mean there is a problem with your program itself -- in fact they're often caused by things outside the control of your program
+      - Good practice to return these kinds of errors and handle them gracefully
+    - _programmer errors_ which should not happen during normal operation, and if they do it is probably the result of a developer mistake or a logical error in your codebase
+      - These are truly exceptional errors, and using panic in these circumstances is more widely accepted
+      - The Go standard library frequently does this when you make a logical error or try to use the language features in an unintended way
+      - Example:
+        - accessing an out-of-bounds index in a slice
+        - trying to close an already-closed channel
+      - Even these the recommendation is to return and gracefully handle programmer errors in most cases
+        - Exception to this is when _returning the error_ adds an unacceptable amount of error handling to the rest of your codebase
+  - The panic in `decodePostForm()` helper: if we get a `form.InvalidDecoderError` at runtime it's because we as the developers have tried to use something that isn't a _non-nil pointer_ as the target decode destination, and this is firmly a programmer error which we _shouldn't_ see under normal operation, and is something that should be picked up in development and tests long before deployment 
+  - _Go by Example_ page on panics summarizes all of this quite nicely:
+
+> A panic typically means something went unexpectedly wrong. Mostly we use it to fail fast on errors that shouldn't occur during normal operation and that we aren't prepared to handle gracefully.
+
+  - More info in [this tutorial](https://www.alexedwards.net/blog/when-is-it-ok-to-panic-in-go)
