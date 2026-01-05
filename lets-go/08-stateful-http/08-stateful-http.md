@@ -18,4 +18,34 @@
 
 
 ## 8.2. Seting up the session manager
+
+- `alexedwards/scs` if you're going to use it in production:
+  - [Documentation](https://github.com/alexedwards/scs)
+  - [API Reference](https://pkg.go.dev/github.com/alexedwards/scs/v2)
+- `sessions` table:
+
+```sql
+USE snippetbox;
+CREATE TABLE sessions (
+    token CHAR(43) PRIMARY KEY,
+    data BLOB NOT NULL,
+    expiry TIMESTAMP(6) NOT NULL
+);
+CREATE INDEX sessions_expiry_idx ON sessions (expiry);
+```
+  - `token` contains a unique, randomly-generated identifier for each session
+  - `data` field will contain the actual session data that you want to share between HTTP requests
+  - `expiry` contains an expiry time for the session
+- Note that `scs.New()` function returns a pointer to a `SessionManager` struct which holds the configuration settings for your sessions
+- Without using alice
+  - If not using `justinas/alice` to help manage your middleware chains, you'd need to use the `http.HandlerFunc()` adapter to convert your handler functions like `app.home` to an `http.Handler`, then wrap that with session middleware instead ... ex:
+  
+```go
+mux := http.NewServeMux()
+mux.Handle("GET /{$}", app.sessionManager.LoadAndSave(http.HandlerFunc(app.home)))
+mux.Handle("GET /snippet/view/:id", app.sessionManager.LoadAndSave(http.HandlerFunc(app.snippetView)))
+// ... etc
+```
+
+
 ## 8.3. Working with session data
