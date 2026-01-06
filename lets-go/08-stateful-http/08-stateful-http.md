@@ -49,3 +49,6 @@ mux.Handle("GET /snippet/view/:id", app.sessionManager.LoadAndSave(http.HandlerF
 
 
 ## 8.3. Working with session data
+
+- Behind the scenes of session management
+  - _session cookie_ contains a _session token_, also known as the _session ID_
