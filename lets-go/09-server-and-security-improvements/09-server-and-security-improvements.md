@@ -38,5 +38,31 @@
 - Source control
   - Add a rule to ignore the contents of `tls`
 
+
 ## 9.5. Configuring HTTPS settings
+
+- Restrict the _elliptic curves_ that can potentially be used during the TLS handshake
+- As of Go 1.25 only `tls.CurveP256` and `tls.X25519` have assembly implementations
+  - The others are very CPU intensive
+  - Restricting the others helps ensure our server will remain performant under heavy loads
+- TLS versions
+  - By default Go's HTTPS server is configured to support TLS 1.2 and 1.3
+  - Change the minimum and maximum TLS versions using:
+    - `tls.Config.MinVersion`
+    - `tls.Config.MaxVersion`
+    - TLS version constants in `crypto/tls`
+    
+```go
+tlsConfig := &tlsConfig{
+	MinVersion: tls.VersionTLS10,
+	MaxVersion: tls.VersionTLS12,
+}
+```
+
+- Cipher suites
+  - Defined in the `crypto/tls` package constants
+  - Balancing security and backwards-compatability
+  - Refer to Mozilla's [recommended configurations](https://wiki.mozilla.org/Security/Server_Side_TLS)
+
+
 ## 9.6. Connection timeouts
